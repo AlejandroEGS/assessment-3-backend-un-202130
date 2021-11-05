@@ -7,6 +7,9 @@
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
     "test": "jest",
+    "db:migrate": "cd ./src/database && sequelize db:migrate",
+    "db:migration:generate": "cd ./src/database && sequelize migration:generate",
+    "db:model:generate": "cd ./src/database && sequelize model:generate",
     "linter": "eslint bin/www src/**/*.js app.js"
   },
   "author": "sjdonado",
@@ -17,9 +20,14 @@
     "eslint-plugin-import": "^2.24.1",
     "jest": "^27.0.6",
     "nodemon": "^2.0.12",
+    "sequelize-cli": "^6.3.0",
     "supertest": "^6.1.6"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "pg": "^8.7.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.9.0",
+    "sqlite3": "^5.0.2"
   }
 }

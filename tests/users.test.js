@@ -1,7 +1,8 @@
 const request = require('supertest');
 
 const app = require('../app');
-const User = require('../src/models/user');
+const database = require('../src/database');
+const { User } = require('../src/database/models');
 
 const USERS_PATH = '/users';
 
@@ -20,6 +21,7 @@ const NEW_USER = {
 
 describe('Users routes', () => {
   beforeAll(async () => {
+    await database.init();
     await User.create(FIRST_USER);
     await User.create(Object.assign(FIRST_USER, { active: false }));
   });
