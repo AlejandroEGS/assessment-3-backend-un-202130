@@ -1,6 +1,13 @@
+/* eslint-disable no-param-reassign */
 const {
   Model,
 } = require('sequelize');
+
+const bcrypt = require('bcrypt');
+
+const { SALT_ROUNDS } = require('../../config');
+
+const { ROLES } = require('../../config/constants');
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
@@ -11,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+    }
+
+    comparePassword(plainTextPassword) {
+      return bcrypt.compare(plainTextPassword, this.password);
     }
   }
   User.init({
@@ -38,9 +49,24 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    role: {
+      type: DataTypes.ENUM,
+      values: Object.values(ROLES),
+      defaultValue: ROLES.regular,
+    },
   }, {
     sequelize,
     modelName: 'User',
   });
+
+  const encryptPassword = async (user) => {
+    if (user.changed('password')) {
+      user.password = await bcrypt.hash(user.password, SALT_ROUNDS);
+    }
+  };
+
+  User.beforeCreate(encryptPassword);
+  User.beforeUpdate(encryptPassword);
+
   return User;
 };

@@ -1,7 +1,10 @@
 const ApiError = require('../utils/ApiError');
-
 const { User } = require('../database/models');
 const UserSerializer = require('../serializers/UserSerializer');
+const AuthSerializer = require('../serializers/AuthSerializer');
+const generateAccessToken = require('../services/jwt');
+const UsersSerializer = require('../serializers/UsersSerializer');
+const { ROLES } = require('../config/constants');
 
 const findUser = async (userId) => {
   const user = await User.findOne({ where: { id: userId, active: true } });
@@ -37,6 +40,18 @@ const createUser = async (req, res, next) => {
   }
 };
 
+const getAllUsers = async (req, res, next) => {
+  try {
+    req.isRole(ROLES.admin);
+
+    const users = await User.findAll({ ...req.pagination });
+
+    res.json(new UsersSerializer(users, await req.getPaginationInfo(User)));
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getUserById = async (req, res, next) => {
   try {
     const { params } = req;
@@ -51,27 +66,6 @@ const getUserById = async (req, res, next) => {
     next(err);
   }
 };
-
-// const deleteUser = async (req, res, next) => {
-//   try {
-//     const { params } = req;
-
-//     const user = await User.findOne({ where: { id: params.id } });
-
-//     if (!user || user.active === false) {
-//       throw new ApiError('User not found', 400);
-//     }
-
-//     await User.update({ where: { id: params.id } },
-//       {
-//         active: false,
-//       });
-
-//     res.json(new UserSerializer(null));
-//   } catch (err) {
-//     next(err);
-//   }
-// };
 
 const updateUser = async (req, res, next) => {
   try {
@@ -113,11 +107,30 @@ const deactivateUser = async (req, res, next) => {
   }
 };
 
+const loginUser = async (req, res, next) => {
+  try {
+    const { body } = req;
+
+    const user = await findUser({ username: body.username });
+
+    if (!(await user.comparePassword(body.password))) {
+      throw new ApiError('User not found', 400);
+    }
+
+    const accessToken = generateAccessToken(user.id, 'ADMIN');
+
+    res.json(new AuthSerializer(accessToken));
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createUser,
   getUserById,
-  // deleteUser,
+  getAllUsers,
   updateUser,
   findUser,
   deactivateUser,
+  loginUser,
 };
