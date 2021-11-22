@@ -14,4 +14,8 @@ router.get('/', authMiddleware, paginationMiddleware, TweetController.getAllTwee
 
 router.get('/:id', TweetController.getTweetById);
 
+router.delete('/:id', authMiddleware, TweetController.deleteTweet);
+
+router.post('/:id/likes', authMiddleware, TweetController.likeTweet);
+
 module.exports = router;

@@ -68,5 +68,8 @@ module.exports = (sequelize, DataTypes) => {
   User.beforeCreate(encryptPassword);
   User.beforeUpdate(encryptPassword);
 
+  User.associate = function (models) {
+    User.hasMany(models.Tweet, { foreignKey: 'user' });
+  };
   return User;
 };

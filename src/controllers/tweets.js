@@ -1,10 +1,10 @@
 const ApiError = require('../utils/ApiError');
-const { User, Tweet } = require('../database/models');
+const { User, Tweet, Comment } = require('../database/models');
 const TweetSerializer = require('../serializers/UserSerializer');
 const TweetsSerializer = require('../serializers/UsersSerializer');
 
 const findTweet = async (tweetId) => {
-  const tweet = await User.findOne({ where: { id: tweetId, active: true } });
+  const tweet = await Tweet.findOne({ where: { id: tweetId, active: true } });
   if (!tweet) {
     throw new ApiError('User not found', 400);
   }
@@ -80,17 +80,36 @@ const deleteTweet = async (req, res, next) => {
     const tweet = await findTweet({ id: params.id });
 
     if (!tweet) {
+      throw new ApiError('Tweet not found', 400);
+    } else {
       const deletedTweet = await Tweet.destroy({ where: { id: params.id } });
       console.log(deletedTweet);
       res.json(new TweetSerializer(null));
-    } else {
-      throw new ApiError('Tweet not found', 400);
     }
   } catch (err) {
     next(err);
   }
 };
 
+const getFeedUsername = async (req, res, next) => {
+  try {
+    const { params } = req;
+    const user = await User.findOne({ where: { username: params.username, active: true } });
+
+    const Tweets = await Tweet.findAll({
+      where: {
+        userId: user.id,
+      },
+      ...req.pagination,
+      include: [
+        { model: User, attributes: ['id', 'name', 'username', 'email', 'createdAt', 'updatedAt', 'lastLoginDate'], as: 'user' },
+        { model: Comment, attributes: ['id', 'text', 'likeCounter', 'tweetId', 'createdAt', 'updatedAt'], as: 'comments' },
+      ],
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   findTweet,
@@ -99,4 +118,5 @@ module.exports = {
   getTweetById,
   likeTweet,
   deleteTweet,
+  getFeedUsername,
 };
