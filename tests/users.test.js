@@ -249,4 +249,60 @@ describe('Users routes', () => {
     expect(response.statusCode).toBe(403);
     expect(response.body.status).toBe('Role not authorized');
   });
+  it('Shoud send password reset with username', async () => {
+    const payload = {
+      username: 'myusername',
+    };
+    const response = await request(app).post(`${USERS_PATH}/send_password_reset`).send(payload);
+    expect(response.statusCode).toBe(200);
+    expect(response.body.status).toBe('success');
+    expect(response.body.data).toBeNull();
+  });
+  it('Should return error on send password reset with wrong username', async () => {
+    const payload = {
+      username: 'myusernam',
+    };
+    const response = await request(app).post(`${USERS_PATH}/send_password_reset`).send(payload);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.status).toBe('User not found');
+  });
+  it('Should reset password', async () => {
+    const usuario = {
+      password: '12345',
+      passwordConfirmation: '12345',
+      ...NEW_USER,
+    };
+    const firstUser = await User.create(usuario);
+    firstUser.token = generateAccessToken(firstUser.id, firstUser.role);
+    firstUser.save();
+    const payload = {
+      token: firstUser.token,
+      password: '123',
+      passwordConfirmation: '123',
+    };
+
+    const response = await request(app).post(`${USERS_PATH}/reset_password`).send(payload);
+    expect(response.statusCode).toBe(200);
+    expect(response.body.status).toBe('success');
+    expect(response.body.data.name).toBe('Tester user');
+    expect(response.body.data.username).toBe('myusername');
+    expect(response.body.data.email).toBe('tester@test.com');
+    expect(response.body.data.createdAt).not.toBeNull();
+    expect(response.body.data.updatedAt).not.toBeNull();
+    expect(response.body.data.lastLoginDate).toBeNull();
+    expect(response.body.data.password).toBeUndefined();
+    expect(response.body.data.passwordConfirmation).toBeUndefined();
+    expect(response.body.data.active).toBeUndefined();
+    expect(response.body.paginationInfo).toBeNull();
+  });
+  it('Should return error in reset password with empty fields or passwords that are not the same', async () => {
+    const payload = {
+      token: ' ',
+      password: '123',
+      passwordConfirmation: '12',
+    };
+    const response = await request(app).post(`${USERS_PATH}/reset_password`).send(payload);
+    expect(response.statusCode).toBe(400);
+    expect(response.body.status).toBe('error');
+  });
 });
