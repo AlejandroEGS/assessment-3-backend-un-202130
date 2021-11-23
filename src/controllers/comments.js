@@ -39,7 +39,6 @@ const deleteCommentsById = async (req, res, next) => {
       throw new ApiError('Tweet not found', 400);
     } else {
       const deletedComment = await Comment.destroy({ where: { id: params.id } });
-      console.log(deletedComment);
       res.json(new CommentsSerializer(null));
     }
   } catch (err) {

@@ -1,18 +1,14 @@
 const BaseSerializer = require('./BaseSerializer');
 
-class UsersSerializer extends BaseSerializer {
-  constructor(models, paginationInfo) {
-    const serializedModels = models.map((model) => {
-      const serializedModel = model.toJSON();
+class UserSerializer extends BaseSerializer {
+  constructor(model) {
+    const serializedModel = model ? model.toJSON() : null;
 
-      delete serializedModel?.password;
-      delete serializedModel?.active;
+    delete serializedModel?.password;
+    delete serializedModel?.active;
 
-      return serializedModel;
-    });
-
-    super('success', serializedModels, paginationInfo);
+    super('success', serializedModel);
   }
 }
 
-module.exports = UsersSerializer;
+module.exports = UserSerializer;

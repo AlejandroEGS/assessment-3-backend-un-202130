@@ -1,7 +1,7 @@
 const BaseSerializer = require('./BaseSerializer');
 
 class UsersSerializer extends BaseSerializer {
-  constructor(models) {
+  constructor(models, paginationInfo) {
     const serializedModels = models.map((model) => {
       const serializedModel = model.toJSON();
 
@@ -11,7 +11,7 @@ class UsersSerializer extends BaseSerializer {
       return serializedModel;
     });
 
-    super('success', serializedModels);
+    super('success', serializedModels, paginationInfo);
   }
 }
 

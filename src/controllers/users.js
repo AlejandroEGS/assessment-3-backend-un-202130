@@ -7,14 +7,16 @@ const UsersSerializer = require('../serializers/UsersSerializer');
 const { ROLES } = require('../config/constants');
 const { transporter } = require('../config/mailer');
 
-const findUser = async (userId) => {
-  const user = await User.findOne({ where: { id: userId, active: true } });
+const findUser = async (where) => {
+  Object.assign(where, { active: true });
+
+  const user = await User.findOne({ where });
   if (!user) {
-    throw new ApiError('User not found', 400);
+    throw new ApiError('User not found', 404);
   }
+
   return user;
 };
-
 const createUser = async (req, res, next) => {
   try {
     const { body } = req;
@@ -34,7 +36,6 @@ const createUser = async (req, res, next) => {
       name: body.name,
       password: body.password,
     });
-
     res.json(new UserSerializer(user));
   } catch (err) {
     next(err);
@@ -46,7 +47,6 @@ const getAllUsers = async (req, res, next) => {
     req.isRole(ROLES.admin);
 
     const users = await User.findAll({ ...req.pagination });
-
     res.json(new UsersSerializer(users, await req.getPaginationInfo(User)));
   } catch (err) {
     next(err);
@@ -73,6 +73,7 @@ const updateUser = async (req, res, next) => {
     const { params } = req;
     const { body } = req;
 
+    req.isUserAuthorized(Number(params.id));
     const user = await findUser(Number(params.id));
 
     if (!user || user.active === false) {
@@ -96,8 +97,11 @@ const deactivateUser = async (req, res, next) => {
   try {
     const { params } = req;
 
+    req.isUserAuthorized(Number(params.id));
     const user = await findUser(Number(params.id));
-
+    if (!user || user.active === false) {
+      throw new ApiError('User not found', 403);
+    }
     Object.assign(user, { active: false });
 
     await user.save();
@@ -113,7 +117,6 @@ const loginUser = async (req, res, next) => {
     const { body } = req;
 
     const user = await findUser({ username: body.username });
-
     if (!(await user.comparePassword(body.password))) {
       throw new ApiError('User not found', 400);
     }

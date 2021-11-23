@@ -223,7 +223,6 @@ describe('Users routes', () => {
     const response = await request(app)
       .get(`${USERS_PATH}/all`)
       .set('Authorization', `bearer ${adminUserAccessToken}`);
-
     expect(response.statusCode).toBe(200);
     expect(response.body.status).toBe('success');
     expect(response.body.data.length).toBe(4);
@@ -263,7 +262,7 @@ describe('Users routes', () => {
       username: 'myusernam',
     };
     const response = await request(app).post(`${USERS_PATH}/send_password_reset`).send(payload);
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
     expect(response.body.status).toBe('User not found');
   });
   it('Should reset password', async () => {

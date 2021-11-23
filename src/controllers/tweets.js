@@ -81,7 +81,6 @@ const deleteTweet = async (req, res, next) => {
       throw new ApiError('Tweet not found', 400);
     } else {
       const deletedTweet = await Tweet.destroy({ where: { id: params.id } });
-      console.log(deletedTweet);
       res.json(new TweetSerializer(null));
     }
   } catch (err) {
