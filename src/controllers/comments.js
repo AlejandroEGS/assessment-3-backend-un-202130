@@ -1,7 +1,7 @@
 const ApiError = require('../utils/ApiError');
 const { Tweet, Comment } = require('../database/models');
 const CommentsSerializer = require('../serializers/CommentsSerializer');
-const TweetMethod = require('../controllers/tweets');
+const TweetMethod = require('./tweets');
 
 const findComments = async (CommentId) => {
   const comment = await Comment.findOne({ where: { id: CommentId, active: true } });
