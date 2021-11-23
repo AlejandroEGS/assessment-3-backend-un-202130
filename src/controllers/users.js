@@ -59,7 +59,7 @@ const getUserById = async (req, res, next) => {
 
     const user = await User.findOne({ where: { id: params.id } });
     if (!user || user.active === false) {
-      throw new ApiError('User not found', 400);
+      throw new ApiError('User not found', 404);
     }
 
     res.json(new UserSerializer(user));
@@ -83,9 +83,13 @@ const updateUser = async (req, res, next) => {
         throw new ApiError('Payload can only contain username, email or name', 400);
       }
     });
-
     Object.assign(user, body);
-
+    await transporter.sendMail({
+      from: '"Update" <kevinleilei18@gmail.com>', // sender address
+      to: user.email, // list of receivers
+      subject: 'Update ✔', // Subject line
+      text: 'User updated successfully', // plain text body
+    });
     res.json(new UserSerializer(user));
   } catch (err) {
     next(err);

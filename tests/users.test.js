@@ -113,7 +113,7 @@ describe('Users routes', () => {
     const USER_ID = 0;
     const response = await request(app).get(`${USERS_PATH}/${USER_ID}`);
 
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
     expect(response.body.status).toBe('User not found');
   });
 
@@ -121,7 +121,7 @@ describe('Users routes', () => {
     const USER_ID = 2;
     const response = await request(app).get(`${USERS_PATH}/${USER_ID}`);
 
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
     expect(response.body.status).toBe('User not found');
   });
 
