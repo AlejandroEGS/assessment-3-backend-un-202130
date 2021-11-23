@@ -11,7 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Comments.belongsTo(models.tweet, {
+      foreignKey: 'tweetId', onDelete: 'CASCADE',
+    });
     }
   }
   Comments.init({
@@ -27,10 +29,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -43,11 +41,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Comment',
   });
-  Comments.associate = function (models) {
-    Comments.belongsTo(models.user, { foreignKey: 'user' });
-    Comments.belongsTo(models.tweet, {
-      foreignKey: 'tweetId', onDelete: 'CASCADE',
-    });
-  };
+
   return Comments;
 };

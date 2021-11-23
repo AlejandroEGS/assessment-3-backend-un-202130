@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Tweet.belongsTo(models.user, { foreignKey: 'userId' });
+      Tweet.hasMany(models.comments, { foreignKey: 'tweetId' });
     }
   }
   Tweet.init({
@@ -39,9 +40,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Tweet',
   });
-  Tweet.associate = function (models) {
-    Tweet.belongsTo(models.user, { foreignKey: 'userId' });
-    Tweet.hasMany(models.comments, { foreignKey: 'tweetId' });
-  };
+
   return Tweet;
 };
