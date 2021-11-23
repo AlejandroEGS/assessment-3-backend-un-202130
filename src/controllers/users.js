@@ -72,12 +72,11 @@ const updateUser = async (req, res, next) => {
   try {
     const { params } = req;
     const { body } = req;
-
     req.isUserAuthorized(Number(params.id));
     const user = await findUser(Number(params.id));
 
     if (!user || user.active === false) {
-      throw new ApiError('User not found', 400);
+      throw new ApiError('User not found', 404);
     }
     Object.keys(body).forEach((key) => {
       if (key !== 'username' && key !== 'email' && key !== 'name') {
@@ -115,10 +114,12 @@ const deactivateUser = async (req, res, next) => {
 const loginUser = async (req, res, next) => {
   try {
     const { body } = req;
-
+    if (body.username === undefined || body.password === undefined) {
+      throw new ApiError('Payload must contain username and password', 400);
+    }
     const user = await findUser({ username: body.username });
     if (!(await user.comparePassword(body.password))) {
-      throw new ApiError('User not found', 400);
+      throw new ApiError('User not found', 404);
     }
 
     const userId = Number(user.id);
@@ -134,6 +135,9 @@ const loginUser = async (req, res, next) => {
 const sendPasswordReset = async (req, res, next) => {
   try {
     const { body } = req;
+    if (body.username === undefined) {
+      throw new ApiError('Payload must contain username', 400);
+    }
     const user = await findUser({ username: body.username });
     const userId = Number(user.id);
     const accessToken = generateAccessToken(userId, user.role);
@@ -155,7 +159,7 @@ const resetPassword = async (req, res, next) => {
     const { body } = req;
     if ((body.password !== body.passwordConfirmation) || !body.token || !body.password
       || !body.passwordConfirmation) {
-      throw new ApiError('error', 400);
+      throw new ApiError('Passwords do not match, empty fields or Payload must contain token, password, email and passwordConfirmation', 400);
     }
     const user = verifyAccessToken(body.token);
     const userId = Number(user.id);

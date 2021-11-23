@@ -152,7 +152,6 @@ describe('Users routes', () => {
 
     expect(response.body.paginationInfo).toBeNull();
   });
-
   it('Should return unauthorized on update deactivated user', async () => {
     const USER_ID = 2;
     const payload = {
@@ -218,7 +217,25 @@ describe('Users routes', () => {
     expect(response.body.status).toBe('success');
     expect(response.body.data.accessToken).not.toBeNull();
   });
+  it('Should return bad request on login with wrong payload', async () => {
+    const payload = {
+      password: '00000',
+    };
+    const response = await request(app).post(`${USERS_PATH}/login`).send(payload);
 
+    expect(response.statusCode).toBe(400);
+    expect(response.body.status).toBe('Payload must contain username and password');
+  });
+  it('Should return error on login with wrong password', async () => {
+    const payload = {
+      username: 'myusername',
+      password: '00000',
+    };
+    const response = await request(app).post(`${USERS_PATH}/login`).send(payload);
+
+    expect(response.statusCode).toBe(404);
+    expect(response.body.status).toBe('User not found');
+  });
   it('Should admin role get all users', async () => {
     const response = await request(app)
       .get(`${USERS_PATH}/all`)
@@ -248,7 +265,7 @@ describe('Users routes', () => {
     expect(response.statusCode).toBe(403);
     expect(response.body.status).toBe('Role not authorized');
   });
-  it('Shoud send password reset with username', async () => {
+  it('Should send password reset with username', async () => {
     const payload = {
       username: 'myusername',
     };
@@ -265,6 +282,16 @@ describe('Users routes', () => {
     expect(response.statusCode).toBe(404);
     expect(response.body.status).toBe('User not found');
   });
+  it('Should return bad request on send password reset with invalid payload', async () => {
+    const payload = {
+      name: 'myusernam',
+    };
+    const response = await request(app).post(`${USERS_PATH}/send_password_reset`).send(payload);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.status).toBe('Payload must contain username');
+  });
+
   it('Should reset password', async () => {
     const usuario = {
       password: '12345',
@@ -294,7 +321,7 @@ describe('Users routes', () => {
     expect(response.body.data.active).toBeUndefined();
     expect(response.body.paginationInfo).toBeNull();
   });
-  it('Should return error in reset password with empty fields or passwords that are not the same', async () => {
+  it('Should return bad request on reset password with invalid payload', async () => {
     const payload = {
       token: ' ',
       password: '123',
@@ -302,6 +329,6 @@ describe('Users routes', () => {
     };
     const response = await request(app).post(`${USERS_PATH}/reset_password`).send(payload);
     expect(response.statusCode).toBe(400);
-    expect(response.body.status).toBe('error');
+    expect(response.body.status).toBe('Passwords do not match, empty fields or Payload must contain token, password, email and passwordConfirmation');
   });
 });
