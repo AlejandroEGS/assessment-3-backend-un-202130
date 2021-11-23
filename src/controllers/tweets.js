@@ -2,6 +2,7 @@ const ApiError = require('../utils/ApiError');
 const { User, Tweet, Comment } = require('../database/models');
 const TweetSerializer = require('../serializers/UserSerializer');
 const TweetsSerializer = require('../serializers/UsersSerializer');
+const CommentsSerializer = require('../serializers/CommentsSerializer');
 
 const findTweet = async (body) => {
   const tweet = await Tweet.findOne({ where: body });
@@ -108,6 +109,7 @@ const getFeedUsername = async (req, res, next) => {
     next(err);
   }
 };
+
 
 module.exports = {
   findTweet,

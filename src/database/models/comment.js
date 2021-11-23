@@ -11,9 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Comments.belongsTo(models.tweet, {
-      foreignKey: 'tweetId', onDelete: 'CASCADE',
-    });
+      Comments.belongsTo(models.Tweet, { foreignKey: 'tweetId', onDelete: 'CASCADE' });
     }
   }
   Comments.init({
