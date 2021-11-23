@@ -2,12 +2,11 @@ const ApiError = require('../utils/ApiError');
 const { User, Tweet, Comment } = require('../database/models');
 const TweetSerializer = require('../serializers/UserSerializer');
 const TweetsSerializer = require('../serializers/UsersSerializer');
-const CommentsSerializer = require('../serializers/CommentsSerializer');
 
 const findTweet = async (body) => {
   const tweet = await Tweet.findOne({ where: body });
   if (!tweet) {
-    throw new ApiError('User not found', 400);
+    throw new ApiError('Tweet not found', 404);
   }
   return tweet;
 };

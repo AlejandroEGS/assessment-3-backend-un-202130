@@ -7,10 +7,10 @@ const UsersSerializer = require('../serializers/UsersSerializer');
 const { ROLES } = require('../config/constants');
 const { transporter } = require('../config/mailer');
 
-const findUser = async (where) => {
-  Object.assign(where, { active: true });
+const findUser = async (body) => {
+  Object.assign(body, { active: true });
 
-  const user = await User.findOne({ where });
+  const user = await User.findOne({ where: body });
   if (!user) {
     throw new ApiError('User not found', 404);
   }
