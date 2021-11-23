@@ -167,6 +167,15 @@ const resetPassword = async (req, res, next) => {
     next(err);
   }
 };
+
+const logoutUser = async (req, res, next) => {
+  try {
+
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   createUser,
   getUserById,
@@ -177,4 +186,5 @@ module.exports = {
   loginUser,
   sendPasswordReset,
   resetPassword,
+  logoutUser,
 };
