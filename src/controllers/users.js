@@ -2,9 +2,10 @@ const ApiError = require('../utils/ApiError');
 const { User } = require('../database/models');
 const UserSerializer = require('../serializers/UserSerializer');
 const AuthSerializer = require('../serializers/AuthSerializer');
-const generateAccessToken = require('../services/jwt');
+const { generateAccessToken, verifyAccessToken } = require('../services/jwt');
 const UsersSerializer = require('../serializers/UsersSerializer');
 const { ROLES } = require('../config/constants');
+const { transporter } = require('../config/mailer');
 
 const findUser = async (userId) => {
   const user = await User.findOne({ where: { id: userId, active: true } });
@@ -117,14 +118,52 @@ const loginUser = async (req, res, next) => {
       throw new ApiError('User not found', 400);
     }
 
-    const accessToken = generateAccessToken(user.id, 'ADMIN');
+    const userId = Number(user.id);
+    const accessToken = generateAccessToken(userId, user.role);
+    user.token = accessToken;
+    await user.save();
 
     res.json(new AuthSerializer(accessToken));
   } catch (err) {
     next(err);
   }
 };
-
+const sendPasswordReset = async (req, res, next) => {
+  try {
+    const { body } = req;
+    const user = await findUser({ username: body.username });
+    const userId = Number(user.id);
+    const accessToken = generateAccessToken(userId, user.role);
+    await transporter.sendMail({
+      from: '"Forgot password" <kevinleilei18@gmail.com>', // sender address
+      to: user.email, // list of receivers
+      subject: 'Forgot password ✔', // Subject line
+      text: `Your access token: ${accessToken}`, // plain text body
+    });
+    user.token = accessToken;
+    await user.save();
+    res.json(new UserSerializer(null));
+  } catch (err) {
+    next(err);
+  }
+};
+const resetPassword = async (req, res, next) => {
+  try {
+    const { body } = req;
+    if ((body.password !== body.passwordConfirmation) || !body.token || !body.password
+      || !body.passwordConfirmation) {
+      throw new ApiError('error', 400);
+    }
+    const user = verifyAccessToken(body.token);
+    const userId = Number(user.id);
+    const user2 = await findUser({ id: userId });
+    user2.password = body.password;
+    await user2.save();
+    res.json(new UserSerializer(user2));
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
   createUser,
   getUserById,
@@ -133,4 +172,6 @@ module.exports = {
   findUser,
   deactivateUser,
   loginUser,
+  sendPasswordReset,
+  resetPassword,
 };
