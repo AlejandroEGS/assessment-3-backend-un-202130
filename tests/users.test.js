@@ -405,6 +405,26 @@ describe('Users routes', () => {
     expect(response.body.status).toBe('Passwords do not match, empty fields or Payload must contain token, password and passwordConfirmation');
   });
 
+  it('Should return access token required on update password when token is null', async () => {
+    const payload = {
+      password: '123',
+      passwordConfirmation: '123',
+    };
+    const response = await request(app).post(`${USERS_PATH}/update_password`).send(payload).set('Authorization', `bearer ${''}`);
+    expect(response.statusCode).toBe(401);
+    expect(response.body.status).toBe('Invalid token');
+  });
+  it('Should return bad request on update password with missmatch passwords', async () => {
+    const payload = {
+      password: '123',
+      passwordConfirmation: '12',
+    };
+    const response = await request(app).post(`${USERS_PATH}/update_password`).send(payload).set('Authorization', `bearer ${firstUserAccessToken}`);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.status).toBe('Passwords do not match');
+  });
+
   it('Should logout sucessfully', async () => {
     const response = await request(app).post(`${USERS_PATH}/logout`).set('Authorization', `bearer ${firstUserAccessToken}`);
 
@@ -423,33 +443,14 @@ describe('Users routes', () => {
     expect(response.body.status).toBe('Invalid token');
     expect(response.body.data).toBeNull();
   });
-  it('Should return access token required on update password when token is null', async () => {
+   it('Should return unauthorized on update password when token does not exist', async () => {
     const payload = {
       password: '123',
       passwordConfirmation: '123',
     };
-    const response = await request(app).post(`${USERS_PATH}/update_password`).send(payload).set('Authorization', `bearer ${''}`);
+    const response = await request(app).post(`${USERS_PATH}/update_password`).send(payload).set('Authorization', `bearer ${firstUserAccessToken}`);
+
     expect(response.statusCode).toBe(401);
     expect(response.body.status).toBe('Invalid token');
-  });
-  it('Should return bad request on update password with missmatch passwords', async () => {
-    const payload = {
-      password: '123',
-      passwordConfirmation: '12',
-    };
-    const response = await request(app).post(`${USERS_PATH}/update_password`).send(payload).set('Authorization', `bearer ${firstUserAccessToken}`);
-
-    expect(response.statusCode).toBe(400);
-    expect(response.body.status).toBe('Passwords do not match, empty fields or Payload must contain password and passwordConfirmation');
-  });
-  it('Should return unauthorized on update password when does not exist', async () => {
-    const payload = {
-      password: '123',
-      passwordConfirmation: '123',
-    };
-    const response = await request(app).post(`${USERS_PATH}/update_password`).send(payload).set('Authorization', `bearer ${firstUserAccessToken}`);
-
-    expect(response.statusCode).toBe(403);
-    expect(response.body.status).toBe('User not authorized');
   });
 });

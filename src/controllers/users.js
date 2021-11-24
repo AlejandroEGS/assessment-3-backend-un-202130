@@ -139,18 +139,22 @@ const loginUser = async (req, res, next) => {
 const updatePassword = async (req, res, next) => {
   try {
     const { body } = req;
-    const accessToken = req.headers.authorization?.split(' ')[1];
-    const user = verifyAccessToken(accessToken);
-    const userId = Number(user.id);
-    const user2 = await findUser({ id: userId });
-    user2.password = body.password;
-    req.isUserAuthorized(Number(user2.id));
-    if ((body.password !== body.passwordConfirmation) || !body.password
-      || !body.passwordConfirmation) {
-      throw new ApiError('Passwords do not match, empty fields or Payload must contain password and passwordConfirmation', 400);
+
+    if (body.password === null || body.password === undefined
+      || body.passwordConfirmation === null || body.passwordConfirmation === undefined) {
+      throw new ApiError('Bad request', 400);
     }
-    await user2.save();
-    res.json(new UserSerializer(user2));
+    if (body.password !== body.passwordConfirmation) {
+      throw new ApiError('Passwords do not match', 400);
+    }
+    const user = await findUser({ id: req.user.id });
+    if (user.dataValues.role === ROLES.admin || user.dataValues.role === ROLES.regular) {
+      const passwordUpdated = {
+        password: body.password,
+      };
+      Object.assign(user, passwordUpdated);
+      await user.save();
+    }
   } catch (err) {
     next(err);
   }
