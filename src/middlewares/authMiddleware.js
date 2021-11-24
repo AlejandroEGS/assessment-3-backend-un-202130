@@ -1,4 +1,4 @@
-const { verifyAccessToken } = require('../services/jwt');
+const { toBlacklist, verifyAccessToken } = require('../services/jwt');
 const ApiError = require('../utils/ApiError');
 
 function authMiddleware(req, res, next) {
@@ -10,6 +10,8 @@ function authMiddleware(req, res, next) {
     }
 
     const user = verifyAccessToken(accessToken);
+
+    const logout = toBlacklist(accessToken);
 
     const isRole = (role) => {
       if (user.role !== role) {
@@ -26,6 +28,7 @@ function authMiddleware(req, res, next) {
     req.user = user;
     req.isRole = isRole;
     req.isUserAuthorized = isUserAuthorized;
+    req.logout = logout;
 
     next();
   } catch ({ message, statusCode }) {
