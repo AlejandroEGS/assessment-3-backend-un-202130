@@ -55,7 +55,7 @@ Ran all test suites.
 ```bash
 docker-compose exec api npm run linter
 ```
-
+### Output
 ```
 PS C:\Users\TheLokestraps\Documents\GitHub\assessment-3-backend-un-202130> docker-compose exec api npm run linter
 
