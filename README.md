@@ -51,6 +51,28 @@ Ran all test suites.
 
 ```
 
+## Run linter
+```bash
+docker-compose exec api npm run linter
+```
+
+```
+PS C:\Users\TheLokestraps\Documents\GitHub\assessment-3-backend-un-202130> docker-compose exec api npm run linter
+
+> trinos-api@1.0.0 linter /usr/src/app
+> eslint bin/www src/**/*.js app.js
+
+
+/usr/src/app/bin/www
+  66:7  warning  Unexpected console statement  no-console
+  70:7  warning  Unexpected console statement  no-console
+  87:3  warning  Unexpected console statement  no-console
+
+✖ 3 problems (0 errors, 3 warnings)
+
+
+```
+
 ## Integrantes:
 ### Nombre: Alejandro Gonzalez, Codigo: 200123798
 ### Nombre: Kang Lei, Codigo: 200108179
