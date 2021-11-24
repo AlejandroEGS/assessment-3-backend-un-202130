@@ -91,7 +91,7 @@ describe('Users routes', () => {
 
   it('Should get user by id', async () => {
     const USER_ID = 1;
-    const response = await request(app).get(`${USERS_PATH}/${USER_ID}`);
+    const response = await request(app).get(`${USERS_PATH}/${USER_ID}`).set('Authorization', `bearer ${adminUserAccessToken}`);
 
     expect(response.statusCode).toBe(200);
     expect(response.body.status).toBe('success');
@@ -109,19 +109,19 @@ describe('Users routes', () => {
     expect(response.body.paginationInfo).toBeNull();
   });
 
-  it('Should return bad request when user does not exist', async () => {
+  it('Should return access token required when token is null', async () => {
     const USER_ID = 0;
     const response = await request(app).get(`${USERS_PATH}/${USER_ID}`);
 
-    expect(response.statusCode).toBe(400);
-    expect(response.body.status).toBe('User not found');
+    expect(response.statusCode).toBe(401);
+    expect(response.body.status).toBe('Access token required');
   });
 
   it('Should return bad request on get a deactivated user', async () => {
     const USER_ID = 2;
-    const response = await request(app).get(`${USERS_PATH}/${USER_ID}`);
+    const response = await request(app).get(`${USERS_PATH}/${USER_ID}`).set('Authorization', `bearer ${adminUserAccessToken}`);;
 
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(404);
     expect(response.body.status).toBe('User not found');
   });
 
@@ -151,6 +151,48 @@ describe('Users routes', () => {
     expect(response.body.data.active).toBeUndefined();
 
     expect(response.body.paginationInfo).toBeNull();
+  });
+  it('Should return bad request on update user with wrong payload', async () => {
+    const USER_ID = 1;
+    const payload = {
+      password: '12345',
+    };
+    const response = await request(app)
+      .put(`${USERS_PATH}/${USER_ID}`)
+      .set('Authorization', `bearer ${firstUserAccessToken}`)
+      .send(payload);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.status).toBe('Payload can only contain username, email or name');
+  });
+  it('Should return User not found when user does not exist', async () => {
+    const USER_ID = 2;
+    const payload = {
+      username: 'new_username',
+      email: 'new_email@test.com',
+      name: 'New name',
+    };
+    const response = await request(app)
+      .put(`${USERS_PATH}/${USER_ID}`)
+      .set('Authorization', `bearer ${secondUserAccessToken}`)
+      .send(payload);
+    expect(response.statusCode).toBe(404);
+    expect(response.body.status).toBe('User not found');
+  });
+  it('Should return access token required on update user with null token', async () => {
+    const USER_ID = 1;
+    const payload = {
+      username: 'new_username',
+      email: 'new_email@test.com',
+      name: 'New name',
+    };
+    const response = await request(app)
+      .put(`${USERS_PATH}/${USER_ID}`)
+      .set('Authorization', `bearer ${''}`)
+      .send(payload);
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body.status).toBe('Access token required');
   });
   it('Should return unauthorized on update deactivated user', async () => {
     const USER_ID = 2;
@@ -205,7 +247,30 @@ describe('Users routes', () => {
     expect(response.statusCode).toBe(403);
     expect(response.body.status).toBe('User not authorized');
   });
+  it('Should return access token required when token is null', async () => {
+    const USER_ID = 1;
+    const response = await request(app).delete(`${USERS_PATH}/${USER_ID}`);
 
+    expect(response.statusCode).toBe(401);
+    expect(response.body.status).toBe('Access token required');
+  });
+  it('Should return bad request when token is wrong', async () => {
+    const USER_ID = 1;
+    const response = await request(app)
+      .delete(`${USERS_PATH}/${USER_ID}`)
+      .set('Authorization', `bearer ${firstUserAccessToken}+'t'`);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.status).toBe('invalid token');
+  });
+  it('Should return user not found on deactivate user when user does not exist ', async () => {
+    const USER_ID = 2;
+    const response = await request(app)
+      .delete(`${USERS_PATH}/${USER_ID}`)
+      .set('Authorization', `bearer ${secondUserAccessToken}`);
+    expect(response.statusCode).toBe(404);
+    expect(response.body.status).toBe('User not found');
+  });
   it('Should login with username and password', async () => {
     const payload = {
       username: 'myusername',
@@ -264,6 +329,14 @@ describe('Users routes', () => {
 
     expect(response.statusCode).toBe(403);
     expect(response.body.status).toBe('Role not authorized');
+  });
+  it('Should return access token required on get all users with null token', async () => {
+    const response = await request(app)
+      .get(`${USERS_PATH}/all`)
+      .set('Authorization', `bearer ${''}`);
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body.status).toBe('Access token required');
   });
   it('Should send password reset with username', async () => {
     const payload = {
@@ -329,6 +402,6 @@ describe('Users routes', () => {
     };
     const response = await request(app).post(`${USERS_PATH}/reset_password`).send(payload);
     expect(response.statusCode).toBe(400);
-    expect(response.body.status).toBe('Passwords do not match, empty fields or Payload must contain token, password, email and passwordConfirmation');
+    expect(response.body.status).toBe('Passwords do not match, empty fields or Payload must contain token, password and passwordConfirmation');
   });
 });

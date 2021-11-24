@@ -43,3 +43,8 @@ Snapshots:   0 total
 Time:        3.071 s
 Ran all test suites.
 ```
+
+## Integrantes:
+### Nombre: Alejandro Gonzalez, Codigo: 200123798
+### Nombre: Kang Lei, Codigo: 200108179
+### Nombre: Ivan Perez, Codigo: 200127518

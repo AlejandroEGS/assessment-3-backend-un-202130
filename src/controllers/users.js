@@ -56,12 +56,10 @@ const getAllUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
   try {
     const { params } = req;
-
     const user = await User.findOne({ where: { id: params.id } });
     if (!user || user.active === false) {
-      throw new ApiError('User not found', 400);
+      throw new ApiError('User not found', 404);
     }
-
     res.json(new UserSerializer(user));
   } catch (err) {
     next(err);
@@ -83,9 +81,13 @@ const updateUser = async (req, res, next) => {
         throw new ApiError('Payload can only contain username, email or name', 400);
       }
     });
-
     Object.assign(user, body);
-
+    await transporter.sendMail({
+      from: '"Update" <kevinleilei18@gmail.com>', // sender address
+      to: user.email, // list of receivers
+      subject: 'Update ✔', // Subject line
+      text: 'User updated successfully', // plain text body
+    });
     res.json(new UserSerializer(user));
   } catch (err) {
     next(err);
@@ -99,7 +101,7 @@ const deactivateUser = async (req, res, next) => {
     req.isUserAuthorized(Number(params.id));
     const user = await findUser(Number(params.id));
     if (!user || user.active === false) {
-      throw new ApiError('User not found', 403);
+      throw new ApiError('User not found', 404);
     }
     Object.assign(user, { active: false });
 
@@ -132,6 +134,24 @@ const loginUser = async (req, res, next) => {
     next(err);
   }
 };
+const updatePassword = async (req, res, next) => {
+  try {
+    // colocar la intrucción que comprueba que el usuario este logueado
+    req.isUserAuthorized(Number(req.user.id));
+    const { body } = req;
+    if ((body.password !== body.passwordConfirmation) || !body.password
+      || !body.passwordConfirmation) {
+      throw new ApiError('Passwords do not match, empty fields or Payload must contain password and passwordConfirmation', 400);
+    }
+    const userId = Number(req.user.id);
+    const user2 = await findUser({ id: userId });
+    user2.password = body.password;
+    await user2.save();
+    res.json(new UserSerializer(user2));
+  } catch (err) {
+    next(err);
+  }
+};
 const sendPasswordReset = async (req, res, next) => {
   try {
     const { body } = req;
@@ -159,7 +179,7 @@ const resetPassword = async (req, res, next) => {
     const { body } = req;
     if ((body.password !== body.passwordConfirmation) || !body.token || !body.password
       || !body.passwordConfirmation) {
-      throw new ApiError('Passwords do not match, empty fields or Payload must contain token, password, email and passwordConfirmation', 400);
+      throw new ApiError('Passwords do not match, empty fields or Payload must contain token, password and passwordConfirmation', 400);
     }
     const user = verifyAccessToken(body.token);
     const userId = Number(user.id);
@@ -191,4 +211,5 @@ module.exports = {
   sendPasswordReset,
   resetPassword,
   logoutUser,
+  updatePassword,
 };
