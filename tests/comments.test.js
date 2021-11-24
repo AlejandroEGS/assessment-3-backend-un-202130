@@ -5,7 +5,7 @@ const app = require('../app');
 const { generateAccessToken } = require('../src/services/jwt');
 
 const database = require('../src/database');
-const { User, Tweet, Comment } = require('../src/database/models');
+const { User, Tweet } = require('../src/database/models');
 
 const COMMENTS_PATH = '/comments';
 

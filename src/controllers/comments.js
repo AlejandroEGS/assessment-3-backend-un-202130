@@ -16,7 +16,7 @@ const createComment = async (req, res, next) => {
     const { body, params } = req;
     await TweetMethod.findTweet({ id: params.id });
 
-    if (body.text === undefined || params.id === undefined) {
+    if (body.text === null || body.text === undefined || params.id === undefined) {
       throw new ApiError('Bad request', 400);
     }
     const Payload = {

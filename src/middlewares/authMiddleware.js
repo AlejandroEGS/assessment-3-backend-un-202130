@@ -6,7 +6,7 @@ function authMiddleware(req, res, next) {
 
   try {
     if (accessToken == null) {
-      throw new ApiError('Access token required', 401);
+      throw new ApiError('Invalid token', 401);
     }
 
     const user = verifyAccessToken(accessToken);
