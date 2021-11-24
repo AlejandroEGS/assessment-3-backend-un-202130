@@ -26,6 +26,8 @@ router.put('/:id', UsersController.updateUser);
 
 router.post('/login', UsersController.loginUser);
 
+router.post('/logout', UsersController.logoutUser);
+
 router.post('/update_password', authMiddleware, UsersController.updatePassword);
 
 router.post('/send_password_reset', UsersController.sendPasswordReset);

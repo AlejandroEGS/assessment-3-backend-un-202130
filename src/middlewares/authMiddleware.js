@@ -1,4 +1,6 @@
-const { verifyAccessToken } = require('../services/jwt');
+const {
+  verifyAccessToken,
+} = require('../services/jwt');
 const ApiError = require('../utils/ApiError');
 
 function authMiddleware(req, res, next) {

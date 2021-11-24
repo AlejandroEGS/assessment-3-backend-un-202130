@@ -2,7 +2,9 @@ const ApiError = require('../utils/ApiError');
 const { User } = require('../database/models');
 const UserSerializer = require('../serializers/UserSerializer');
 const AuthSerializer = require('../serializers/AuthSerializer');
-const { generateAccessToken, verifyAccessToken } = require('../services/jwt');
+const {
+  generateAccessToken, verifyAccessToken, toBlacklist,
+} = require('../services/jwt');
 const UsersSerializer = require('../serializers/UsersSerializer');
 const { ROLES } = require('../config/constants');
 const { transporter } = require('../config/mailer');
@@ -194,7 +196,9 @@ const resetPassword = async (req, res, next) => {
 
 const logoutUser = async (req, res, next) => {
   try {
-
+    const accessToken = req.headers.authorization?.split(' ')[1];
+    toBlacklist(accessToken);
+    res.json(new UserSerializer(null));
   } catch (err) {
     next(err);
   }

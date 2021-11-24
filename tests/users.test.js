@@ -114,12 +114,12 @@ describe('Users routes', () => {
     const response = await request(app).get(`${USERS_PATH}/${USER_ID}`);
 
     expect(response.statusCode).toBe(401);
-    expect(response.body.status).toBe('Access token required');
+    expect(response.body.status).toBe('Invalid token');
   });
 
   it('Should return bad request on get a deactivated user', async () => {
     const USER_ID = 2;
-    const response = await request(app).get(`${USERS_PATH}/${USER_ID}`).set('Authorization', `bearer ${adminUserAccessToken}`);;
+    const response = await request(app).get(`${USERS_PATH}/${USER_ID}`).set('Authorization', `bearer ${adminUserAccessToken}`);
 
     expect(response.statusCode).toBe(404);
     expect(response.body.status).toBe('User not found');
@@ -192,7 +192,7 @@ describe('Users routes', () => {
       .send(payload);
 
     expect(response.statusCode).toBe(401);
-    expect(response.body.status).toBe('Access token required');
+    expect(response.body.status).toBe('Invalid token');
   });
   it('Should return unauthorized on update deactivated user', async () => {
     const USER_ID = 2;
@@ -252,7 +252,7 @@ describe('Users routes', () => {
     const response = await request(app).delete(`${USERS_PATH}/${USER_ID}`);
 
     expect(response.statusCode).toBe(401);
-    expect(response.body.status).toBe('Access token required');
+    expect(response.body.status).toBe('Invalid token');
   });
   it('Should return bad request when token is wrong', async () => {
     const USER_ID = 1;
@@ -336,7 +336,7 @@ describe('Users routes', () => {
       .set('Authorization', `bearer ${''}`);
 
     expect(response.statusCode).toBe(401);
-    expect(response.body.status).toBe('Access token required');
+    expect(response.body.status).toBe('Invalid token');
   });
   it('Should send password reset with username', async () => {
     const payload = {
@@ -403,5 +403,24 @@ describe('Users routes', () => {
     const response = await request(app).post(`${USERS_PATH}/reset_password`).send(payload);
     expect(response.statusCode).toBe(400);
     expect(response.body.status).toBe('Passwords do not match, empty fields or Payload must contain token, password and passwordConfirmation');
+  });
+
+  it('Should logout sucessfully', async () => {
+    const response = await request(app).post(`${USERS_PATH}/logout`).set('Authorization', `bearer ${firstUserAccessToken}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.status).toBe('success');
+    expect(response.body.data).toBeNull();
+  });
+
+  it('Should throw error by invalid token', async () => {
+    const USER_ID = 1;
+    const response = await request(app)
+      .delete(`${USERS_PATH}/${USER_ID}`)
+      .set('Authorization', `bearer ${firstUserAccessToken}`);
+
+    expect(response.statusCode).toBe(401);
+    expect(response.body.status).toBe('Invalid token');
+    expect(response.body.data).toBeNull();
   });
 });
