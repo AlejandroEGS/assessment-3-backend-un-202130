@@ -7,7 +7,7 @@ class UsersSerializer extends BaseSerializer {
 
       delete serializedModel?.password;
       delete serializedModel?.active;
-
+      delete serializedModel?.role;
       return serializedModel;
     });
 

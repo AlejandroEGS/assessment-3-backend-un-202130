@@ -56,12 +56,10 @@ const getAllUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
   try {
     const { params } = req;
-
     const user = await User.findOne({ where: { id: params.id } });
     if (!user || user.active === false) {
       throw new ApiError('User not found', 404);
     }
-
     res.json(new UserSerializer(user));
   } catch (err) {
     next(err);
@@ -103,7 +101,7 @@ const deactivateUser = async (req, res, next) => {
     req.isUserAuthorized(Number(params.id));
     const user = await findUser(Number(params.id));
     if (!user || user.active === false) {
-      throw new ApiError('User not found', 403);
+      throw new ApiError('User not found', 404);
     }
     Object.assign(user, { active: false });
 

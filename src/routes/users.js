@@ -10,7 +10,7 @@ const { paginationMiddleware } = require('../middlewares/paginationMiddleware');
 
 router.get('/all', authMiddleware, paginationMiddleware, UsersController.getAllUsers);
 
-router.get('/:id', UsersController.getUserById);
+router.get('/:id', authMiddleware, UsersController.getUserById);
 
 router.put('/:id', authMiddleware, UsersController.updateUser);
 
