@@ -18,8 +18,6 @@ function toBlacklist(token) {
   blacklistData.push(token);
 }
 
-
-
 /**
  *
  * @param {String} token
