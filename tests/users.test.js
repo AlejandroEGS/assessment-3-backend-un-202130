@@ -402,6 +402,6 @@ describe('Users routes', () => {
     };
     const response = await request(app).post(`${USERS_PATH}/reset_password`).send(payload);
     expect(response.statusCode).toBe(400);
-    expect(response.body.status).toBe('Passwords do not match, empty fields or Payload must contain token, password, email and passwordConfirmation');
+    expect(response.body.status).toBe('Passwords do not match, empty fields or Payload must contain token, password and passwordConfirmation');
   });
 });
